@@ -36,6 +36,10 @@
 
 #define TFA98XX_NUM_RATES		9
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)
+#define TFA_LOAD_CNT_WORK
+#endif
+
 /* DSP init status */
 enum tfa98xx_dsp_init_state {
 	TFA98XX_DSP_INIT_STOPPED,	/* DSP not running */
@@ -81,6 +85,9 @@ struct tfa98xx {
 	struct delayed_work monitor_work;
 	struct delayed_work interrupt_work;
 	struct delayed_work tapdet_work;
+#if defined(TFA_LOAD_CNT_WORK)
+	struct delayed_work load_cnt_work;
+#endif
 	struct mutex dsp_lock;
 	int dsp_init;
 	int dsp_fw_state;

@@ -2454,6 +2454,15 @@ static void tfa98xx_interrupt(struct work_struct *work)
 	 tfa_irq_unmask(tfa98xx->tfa);
 }
 
+#if defined(TFA_LOAD_CNT_WORK)
+static void tfa98xx_load_container_work(struct work_struct *work)
+{
+	struct tfa98xx *tfa98xx = container_of(work, struct tfa98xx, load_cnt_work.work);
+
+	tfa98xx_load_container(tfa98xx);
+}
+#endif /* TFA_LOAD_CNT_WORK */
+
 static int tfa98xx_startup(struct snd_pcm_substream *substream,
 						struct snd_soc_dai *dai)
 {
@@ -2793,13 +2802,23 @@ static int tfa98xx_probe(struct snd_soc_codec *codec)
 	INIT_DELAYED_WORK(&tfa98xx->interrupt_work, tfa98xx_interrupt);
 	INIT_DELAYED_WORK(&tfa98xx->tapdet_work, tfa98xx_tapdet_work);
 
+#if defined(TFA_LOAD_CNT_WORK)
+	INIT_DELAYED_WORK(&tfa98xx->load_cnt_work, tfa98xx_load_container_work);
+#endif
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)
 	tfa98xx->component = component;
 #else
 	tfa98xx->codec = codec;
 #endif
 
+#if defined(TFA_LOAD_CNT_WORK)
+	queue_delayed_work(tfa98xx->tfa98xx_wq,
+						&tfa98xx->load_cnt_work,
+						msecs_to_jiffies(2000)); /* start in 2sec */
+#else
 	ret = tfa98xx_load_container(tfa98xx);
+#endif
 
 	pr_debug("Container loading requested: %d\n", ret);
 
@@ -2845,6 +2864,9 @@ static int tfa98xx_remove(struct snd_soc_codec *codec)
 	cancel_delayed_work_sync(&tfa98xx->monitor_work);
 	cancel_delayed_work_sync(&tfa98xx->init_work);
 	cancel_delayed_work_sync(&tfa98xx->tapdet_work);
+#if defined(TFA_LOAD_CNT_WORK)
+	cancel_delayed_work_sync(&tfa98xx->load_cnt_work);
+#endif
 
 	if (tfa98xx->tfa98xx_wq)
 		destroy_workqueue(tfa98xx->tfa98xx_wq);
@@ -3300,6 +3322,9 @@ static int tfa98xx_i2c_remove(struct i2c_client *i2c)
 	cancel_delayed_work_sync(&tfa98xx->monitor_work);
 	cancel_delayed_work_sync(&tfa98xx->init_work);
 	cancel_delayed_work_sync(&tfa98xx->tapdet_work);
+#if defined(TFA_LOAD_CNT_WORK)
+	cancel_delayed_work_sync(&tfa98xx->load_cnt_work);
+#endif
 
 	device_remove_bin_file(&i2c->dev, &dev_attr_reg);
 	device_remove_bin_file(&i2c->dev, &dev_attr_rw);
