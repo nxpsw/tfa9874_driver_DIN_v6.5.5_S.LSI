@@ -50,14 +50,14 @@ typedef struct uint24 {
  *   all char types are in ASCII
  */
 typedef struct nxpTfaHeader {
-	uint16_t id;
+    uint16_t id;
     char version[2];     // "V_" : V=version, vv=subversion
     char subversion[2];  // "vv" : vv=subversion
     uint16_t size;       // data size in bytes following CRC
     uint32_t CRC;        // 32-bits CRC for following data
-    char customer[8];    // “name of customer”
-    char application[8]; // “application name”
-    char type[8];		 // “application type name”
+    char customer[8];    // ?�name of customer??
+    char application[8]; // ?�application name??
+    char type[8];		 // ?�application type name??
 } nxpTfaHeader_t;
 
 typedef enum nxpTfaSamplerate {
@@ -487,7 +487,7 @@ typedef struct nxpTfaOldVolumeStepFile {
  */
 struct nxpTfaSpkHeader {
 	struct nxpTfaHeader hdr;
-	char name[8];	// speaker nick name (e.g. “dumbo”)
+	char name[8];	// speaker nick name (e.g. ?�dumbo??
 	char vendor[16];
 	char type[8];
 	//	dimensions (mm)
@@ -504,7 +504,7 @@ struct nxpTfaSpkHeader {
 #define NXPTFA_SP_SUBVERSION "00"
 typedef struct nxpTfaSpeakerFile {
 	nxpTfaHeader_t hdr;
-	char name[8];	// speaker nick name (e.g. “dumbo”)
+	char name[8];	// speaker nick name (e.g. ?�dumbo??
 	char vendor[16];
 	char type[8];
 	//	dimensions (mm)
@@ -542,7 +542,7 @@ typedef struct nxpTfaLiveData {
 #define NXPTFA_SP3_SUBVERSION "00"
 struct nxpTfaSpeakerFileMax2 {
 	nxpTfaHeader_t hdr;
-	char name[8];	// speaker nick name (e.g. “dumbo”)
+	char name[8];	// speaker nick name (e.g. ?�dumbo??
 	char vendor[16];
 	char type[8];
 	//	dimensions (mm)
@@ -710,9 +710,9 @@ typedef struct nxpTfaContainer {
     uint32_t size;				// data size in bytes following CRC
     uint32_t CRC;				// 32-bits CRC for following data
     uint16_t rev;				// "extra chars for rev nr"
-    char customer[8];			// “name of customer”
-    char application[8];		// “application name”
-    char type[8];				// “application type name”
+    char customer[8];			// ?�name of customer??
+    char application[8];		// ?�application name??
+    char type[8];				// ?�application type name??
     uint16_t ndev;	 			// "nr of device lists"
     uint16_t nprof;	 			// "nr of profile lists"
     uint16_t nliveData;			// "nr of livedata lists"

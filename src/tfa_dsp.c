@@ -255,6 +255,7 @@ void tfa_set_query_info(struct tfa_device *tfa)
 		tfa->spkr_count = 1;
 		tfa->is_probus_device = 1;
 		tfa->daimap = Tfa98xx_DAI_TDM;
+		tfa->convert_dsp32 = 1;
 		tfa9872_ops(&tfa->dev_ops); /* register device operations */
 		break;
 	case 0x74:
@@ -263,6 +264,7 @@ void tfa_set_query_info(struct tfa_device *tfa)
 		tfa->tfa_family = 2;
 		tfa->spkr_count = 1;
 		tfa->is_probus_device = 1;
+		tfa->convert_dsp32 = 1;
 		tfa->daimap = Tfa98xx_DAI_TDM;
 		tfa9874_ops(&tfa->dev_ops); /* register device operations */     
 		break;
@@ -1468,6 +1470,7 @@ enum Tfa98xx_Error dsp_msg(struct tfa_device *tfa, int length24, const char *buf
 
 	/* Only create multi-msg when the dsp is cold */
 	if(tfa->ext_dsp == 1) {
+		int len_word_in_bytes = (tfa->convert_dsp32) ? 4 : 3;
 		/* Creating the multi-msg */
 		error = tfa_tib_dsp_msgmulti(tfa, length, buf);
 		if(error == Tfa98xx_Error_Fail)
@@ -1484,6 +1487,9 @@ enum Tfa98xx_Error dsp_msg(struct tfa_device *tfa, int length24, const char *buf
 				pr_debug("Multi-message buffer full. Sending multi-message, length=%d \n", len);
 			}
 			if (tfa->has_msg==0 ) /* via i2c */ {
+				/* total length : from blob[4] to end(0x00, 0x00, 0x00, 0x00)*/
+				blob[2] = (uint8_t)(((length - 4) / len_word_in_bytes) & 0xff); /* lsb */
+				blob[3] = (uint8_t)((((length - 4) / len_word_in_bytes) & 0xff00) >> 8); /* msb */
 				/* Send tot the target selected */
 				error = (tfa->dev_ops.dsp_msg)(tfa, len, (const char*)blob);
 			} else { /* via msg hal */
@@ -1511,6 +1517,9 @@ enum Tfa98xx_Error dsp_msg(struct tfa_device *tfa, int length24, const char *buf
 				pr_debug("Last message for the multi-message received. Multi-message length=%d \n", length);
 
 			if (tfa->has_msg==0 ) /* via i2c */ {
+				/* total length : from blob[4] to end(0x00, 0x00, 0x00, 0x00)*/
+				blob[2] = (uint8_t)(((length - 4) / len_word_in_bytes) & 0xff); /* lsb */
+				blob[3] = (uint8_t)((((length - 4) / len_word_in_bytes) & 0xff00) >> 8); /* msb */
 				/* Send tot the target selected */
 				error = (tfa->dev_ops.dsp_msg)(tfa, length, (const char*)blob);
 			} else { /* via msg hal */
@@ -4006,3 +4015,11 @@ void tfa_lp_mode_interrupt(struct tfa_device *tfa)
 		tfa_irq_clear(tfa, tfa9912_irq_stclpr);
 	}
 }
+
+int tfa_ext_register(dsp_send_message_t tfa_send_message,
+	dsp_read_message_t tfa_read_message,
+	tfa_event_handler_t *tfa_event_handler)
+{
+	return 0;
+}
+EXPORT_SYMBOL(tfa_ext_register);

@@ -2289,7 +2289,18 @@ int tfa_tib_dsp_msgmulti(struct tfa_device *tfa, int length, const char *buffer)
 
 	/* SetRe25 message is always the last message of the multi-msg */
 	if (tfa->convert_dsp32) {
-		if (buf[1] == 0x81 && buf[0] == SB_PARAM_SET_RE25C) {
+		if ((buf[0] == SB_PARAM_SET_RE25C && buf[1] == 0x81 && buf[2] == 0x00)
+			|| (buf[0] == FW_PAR_ID_GET_STATUS_CHANGE && buf[1] == 0x80)
+			|| (buf[0] == FW_PAR_ID_GET_TAG && buf[1] == 0x80)
+			|| (buf[0] == FW_PAR_ID_GET_API_VERSION && buf[1] == 0x80)
+			|| (buf[0] == FW_PAR_ID_GET_MEMTRACK && buf[1] == 0x80)
+			|| (buf[0] == SB_PARAM_GET_ALGO_PARAMS
+				&& buf[1] == 0x81 && buf[2] == 0x04)
+			|| (buf[0] == BFB_PAR_ID_GET_COEFS && buf[1] == 0x82)
+			|| (buf[0] == SB_PARAM_GET_RE25C
+				&& buf[1] == 0x81 && buf[2] == 0x04)) {
+			pr_debug("%s: found last message - sending: buf[0]=%d\n",
+				 __func__, buf[0]);
 			return 1; /* 1 means last message is done! */
 		}
 	} else {
