@@ -359,7 +359,7 @@ enum Tfa98xx_Error tfa98xx_get_mtp(struct tfa_device *tfa, uint16_t *value);
  */
 void tfa98xx_key2(struct tfa_device *tfa, int lock);
 
-int tfa_calibrate(struct tfa_device *tfa) ;
+enum Tfa98xx_Error tfa_calibrate(struct tfa_device *tfa) ;
 void tfa98xx_set_exttemp(struct tfa_device *tfa, short ext_temp);
 short tfa98xx_get_exttemp(struct tfa_device *tfa);
 
